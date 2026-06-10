@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Budget — My Money Book</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+  :root {
+    --navy: #0f1f3d;
+    --navy-mid: #1a3260;
+    --navy-light: #243d72;
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --gold-pale: #fdf6e3;
+    --white: #ffffff;
+    --off-white: #f7f8fc;
+    --text: #1a1a2e;
+    --text-muted: #6b7a9b;
+    --border: #dde3f0;
+    --danger: #c0392b;
+    --success: #1a7a4a;
+    --warn: #d97706;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(15,31,61,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--off-white);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: var(--navy);
+    color: var(--white);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+  }
+  .header-brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-brand span.accent { color: var(--gold); }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .month-selector {
+    background: var(--navy-light);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    outline: none;
+  }
+  .month-selector option { background: var(--navy); }
+  .btn-print {
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+  }
+  .btn-print:hover { background: var(--gold-light); }
+
+  /* BALANCE BANNER */
+  .balance-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    color: var(--white);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 3px solid var(--gold);
+  }
+  .bal-item { flex: 1; min-width: 120px; }
+  .bal-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 4px;
+  }
+  .bal-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .bal-value.positive { color: #5de0a0; }
+  .bal-value.negative { color: #f97b7b; }
+  .bal-value.gold { color: var(--gold); }
+  .bal-divider {
+    width: 1px;
+    background: rgba(255,255,255,0.15);
+    align-self: stretch;
+    margin: 0 8px;
+  }
+
+  /* TABS */
+  .tabs-nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 24px;
+    gap: 0;
+    position: sticky;
+    top: 64px;
+    z-index: 90;
+    box-shadow: var(--shadow);
+  }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.83rem;
+    padding: 14px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.01em;
+  }
+  .tab-btn:hover { color: var(--navy); }
+  .tab-btn.active {
+    color: var(--navy);
+    border-bottom-color: var(--gold);
+    font-weight: 600;
+  }
+  .tab-badge {
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    min-width: 18px;
+    text-align: center;
+  }
+  .tab-btn.active .tab-badge { background: var(--gold); color: var(--navy); }
+
+  /* CONTENT */
+  .content-area { padding: 24px; max-width: 900px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION CARD */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .card-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--off-white);
+  }
+  .card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body { padding: 16px 20px; }
+
+  /* FORM ROW */
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 120px; }
+  .form-group label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .form-group input, .form-group select, .form-group textarea {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--navy-light);
+    box-shadow: 0 0 0 3px rgba(26,50,96,0.08);
+  }
+
+  .btn-add {
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    padding: 9px 18px;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+  }
+  .btn-add:hover { background: var(--navy-mid); }
+  .btn-add.gold-btn { background: var(--gold); color: var(--navy); }
+  .btn-add.gold-btn:hover { background: var(--gold-light); }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+    background: var(--off-white);
+  }
+  .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(201,168,76,0.04); }
+
+  .amount-in { color: var(--success); font-weight: 600; }
+  .amount-out { color: var(--danger); font-weight: 600; }
+  .amount-warn { color: var(--warn); font-weight: 600; }
+
+  .btn-del {
+    background: none;
+    border: 1px solid #f0b4ae;
+    color: var(--danger);
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-del:hover { background: #fff0ee; }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 16px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+  }
+  .empty-state .icon { font-size: 2rem; margin-bottom: 8px; }
+
+  /* LOAN SCHEDULE */
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .sched-month {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .sched-month .m-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .sched-month .m-capital { font-size: 0.88rem; color: var(--text-muted); }
+  .sched-month .m-interest { font-size: 0.88rem; color: var(--warn); font-weight: 600; }
+  .sched-month .m-total { font-size: 1rem; font-weight: 700; color: var(--danger); margin-top: 4px; }
+  .sched-month .m-paid {
+    margin-top: 8px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sched-month.paid { border-color: #5de0a0; background: #f0fff8; }
+  .sched-month.paid .m-total { color: var(--success); }
+
+  /* RUNNING BALANCE TABLE */
+  .ledger-table .data-table td:last-child { font-weight: 700; }
+
+  /* SUMMARY BOXES */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .summary-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .summary-box .s-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .summary-box .s-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+  .s-val.in { color: var(--success); }
+  .s-val.out { color: var(--danger); }
+  .s-val.neutral { color: var(--navy); }
+  .s-val.gold { color: var(--gold); }
+
+  /* PRINT */
+  @media print {
+    .app-header, .tabs-nav, .btn-add, .btn-del, .btn-print, .form-row, .print-hide { display: none !important; }
+    .tab-panel { display: block !important; }
+    .balance-banner { background: #fff !important; color: #000 !important; border: 2px solid #000; }
+    .bal-value { color: #000 !important; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+    body { background: #fff; }
+    .content-area { padding: 10px; max-width: 100%; }
+    .print-section { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-brand">
+    <span>💰</span>
+    <span>My <span class="accent">Money Book</span></span>
+  </div>
+  <div class="header-right">
+    <select class="month-selector" id="monthSelect" onchange="changeMonth()"></select>
+    <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+  </div>
+</header>
+
+<!-- BALANCE BANNER -->
+<div class="balance-banner" id="balanceBanner">
+  <div class="bal-item">
+    <div class="bal-label">Income</div>
+    <div class="bal-value positive" id="bannerIncome">R 0.00</div>
+  </div>
+  <div class="bal-divider"></div>
+  <div class="bal-item">
+    <div class="bal-label">Expenses</div>
+    <div class="bal-value negative" id="bannerExpenses">R 0.00</div>
+  </div>
+  <div class="bal-divider"></div>
+  <div class="bal-item">
+    <div class="bal-label">Loan Repayments</div>
+    <div class="bal-value negative" id="bannerLoans">R 0.00</div>
+  </div>
+  <div class="bal-divider"></div>
+  <div class="bal-item">
+    <div class="bal-label">Owner's Pay (Saved)</div>
+    <div class="bal-value gold" id="bannerSavings">R 0.00</div>
+  </div>
+  <div class="bal-divider"></div>
+  <div class="bal-item">
+    <div class="bal-label">Running Balance</div>
+    <div class="bal-value" id="bannerBalance">R 0.00</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<nav class="tabs-nav">
+  <button class="tab-btn active" onclick="switchTab('income')" id="tab-income">
+    📥 Income <span class="tab-badge" id="badge-income">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('loans')" id="tab-loans">
+    🦈 Loan Sharks <span class="tab-badge" id="badge-loans">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('owners')" id="tab-owners">
+    👤 Owner's Pay <span class="tab-badge" id="badge-owners">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('expenses')" id="tab-expenses">
+    💸 Expenses <span class="tab-badge" id="badge-expenses">0</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('ledger')" id="tab-ledger">
+    📒 Ledger
+  </button>
+</nav>
+
+<!-- CONTENT -->
+<div class="content-area">
+
+  <!-- ======= INCOME TAB ======= -->
+  <div class="tab-panel active" id="panel-income">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">📥 Record Income / Salary</div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="inc-date">
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>Source / Description</label>
+            <input type="text" id="inc-desc" placeholder="e.g. Monthly salary, side income…">
+          </div>
+          <div class="form-group">
+            <label>Amount (R)</label>
+            <input type="number" id="inc-amount" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <button class="btn-add gold-btn" onclick="addIncome()">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Income Entries</div>
+        <span id="inc-total" style="font-weight:700;color:var(--success)">Total: R 0.00</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr>
+            <th>Date</th><th>Description</th><th>Amount</th><th></th>
+          </tr></thead>
+          <tbody id="inc-tbody">
+            <tr><td colspan="4" class="empty-state"><div class="icon">📥</div>No income recorded yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= LOANS TAB ======= -->
+  <div class="tab-panel" id="panel-loans">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🦈 Add New Loan</div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date Taken</label>
+            <input type="date" id="loan-date">
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>Lender / Description</label>
+            <input type="text" id="loan-desc" placeholder="e.g. Sipho, mashonisa…">
+          </div>
+          <div class="form-group">
+            <label>Capital (R)</label>
+            <input type="number" id="loan-capital" placeholder="0.00" min="0" step="0.01" oninput="previewLoan()">
+          </div>
+          <div class="form-group">
+            <label>Interest % (flat)</label>
+            <input type="number" id="loan-rate" placeholder="e.g. 30" min="0" step="0.1" oninput="previewLoan()">
+          </div>
+          <div class="form-group">
+            <label>Repay over</label>
+            <select id="loan-months">
+              <option value="1">1 month</option>
+              <option value="2">2 months</option>
+              <option value="3" selected>3 months</option>
+            </select>
+          </div>
+        </div>
+        <div id="loan-preview" style="display:none;margin-top:10px;background:var(--gold-pale);border:1px solid #e0c86a;border-radius:8px;padding:12px 16px;font-size:0.87rem;">
+          <strong>Repayment Preview</strong><br>
+          <span id="loan-preview-text"></span>
+        </div>
+        <div style="margin-top:10px;display:flex;justify-content:flex-end">
+          <button class="btn-add" onclick="addLoan()">+ Add Loan</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="loans-list"></div>
+  </div>
+
+  <!-- ======= OWNER'S PAY TAB ======= -->
+  <div class="tab-panel" id="panel-owners">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">👤 Owner's Pay / Personal Savings</div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px">Amount you set aside / pay yourself — treated as an outflow from available cash.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="own-date">
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>Note</label>
+            <input type="text" id="own-desc" placeholder="e.g. Personal savings, groceries, household…">
+          </div>
+          <div class="form-group">
+            <label>Amount (R)</label>
+            <input type="number" id="own-amount" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <button class="btn-add gold-btn" onclick="addOwner()">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Owner's Pay Entries</div>
+        <span id="own-total" style="font-weight:700;color:var(--gold)">Total: R 0.00</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr>
+            <th>Date</th><th>Note</th><th>Amount</th><th></th>
+          </tr></thead>
+          <tbody id="own-tbody">
+            <tr><td colspan="4" class="empty-state"><div class="icon">👤</div>No owner's pay recorded yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= EXPENSES TAB ======= -->
+  <div class="tab-panel" id="panel-expenses">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">💸 Add Expense</div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="exp-date">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="exp-cat">
+              <option>Rent / Bond</option>
+              <option>Electricity</option>
+              <option>Water</option>
+              <option>Groceries</option>
+              <option>Transport / Petrol</option>
+              <option>School Fees</option>
+              <option>Insurance</option>
+              <option>Airtime / Data</option>
+              <option>Clothing</option>
+              <option>Medical</option>
+              <option>Entertainment</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>Description</label>
+            <input type="text" id="exp-desc" placeholder="Details…">
+          </div>
+          <div class="form-group">
+            <label>Amount (R)</label>
+            <input type="number" id="exp-amount" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <button class="btn-add" onclick="addExpense()">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Expense Entries</div>
+        <span id="exp-total" style="font-weight:700;color:var(--danger)">Total: R 0.00</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr>
+            <th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th></th>
+          </tr></thead>
+          <tbody id="exp-tbody">
+            <tr><td colspan="5" class="empty-state"><div class="icon">💸</div>No expenses recorded yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= LEDGER TAB ======= -->
+  <div class="tab-panel" id="panel-ledger">
+    <div class="summary-grid" id="ledger-summary"></div>
+    <div class="card ledger-table">
+      <div class="card-head">
+        <div class="card-title">📒 Running Ledger — All Transactions</div>
+        <span style="font-size:0.78rem;color:var(--text-muted)" id="ledger-month-label"></span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr>
+            <th>Date</th><th>Type</th><th>Description</th><th>In (R)</th><th>Out (R)</th><th>Balance (R)</th>
+          </tr></thead>
+          <tbody id="ledger-tbody">
+            <tr><td colspan="6" class="empty-state"><div class="icon">📒</div>No entries yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content-area -->
+
+<script>
+// ===================== STATE =====================
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+let currentKey = '';
+
+function getMonthKey(y, m) { return `budget_${y}_${String(m).padStart(2,'0')}`; }
+
+function getData(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || { income:[], loans:[], owners:[], expenses:[] }; }
+  catch(e) { return { income:[], loans:[], owners:[], expenses:[] }; }
+}
+
+function saveData(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+
+// ===================== MONTH SELECTOR =====================
+function buildMonthSelector() {
+  const sel = document.getElementById('monthSelect');
+  sel.innerHTML = '';
+  const now = new Date();
+  // show 12 months back + 3 forward
+  for (let i = -12; i <= 3; i++) {
+    let d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function changeMonth() {
+  const val = document.getElementById('monthSelect').value;
+  const [y, m] = val.split('-');
+  currentKey = getMonthKey(y, m);
+  renderAll();
+  document.getElementById('ledger-month-label').textContent = 
+    MONTHS[parseInt(m)-1] + ' ' + y;
+}
+
+// ===================== TABS =====================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'ledger') renderLedger();
+}
+
+// ===================== FORMAT =====================
+function fmt(n) { return 'R ' + parseFloat(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+
+function fmtDate(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ===================== INCOME =====================
+function addIncome() {
+  const date = document.getElementById('inc-date').value || todayStr();
+  const desc = document.getElementById('inc-desc').value.trim();
+  const amount = parseFloat(document.getElementById('inc-amount').value);
+  if (!desc || isNaN(amount) || amount <= 0) { alert('Please fill in description and a valid amount.'); return; }
+  const data = getData(currentKey);
+  data.income.push({ id: uid(), date, desc, amount });
+  saveData(currentKey, data);
+  document.getElementById('inc-desc').value = '';
+  document.getElementById('inc-amount').value = '';
+  renderAll();
+}
+
+function deleteIncome(id) {
+  if (!confirm('Delete this income entry?')) return;
+  const data = getData(currentKey);
+  data.income = data.income.filter(x => x.id !== id);
+  saveData(currentKey, data);
+  renderAll();
+}
+
+function renderIncome() {
+  const data = getData(currentKey);
+  const tbody = document.getElementById('inc-tbody');
+  if (!data.income.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div class="icon">📥</div>No income recorded yet</td></tr>';
+    document.getElementById('inc-total').textContent = 'Total: R 0.00';
+    document.getElementById('badge-income').textContent = 0;
+    return;
+  }
+  const sorted = [...data.income].sort((a,b) => a.date.localeCompare(b.date));
+  const total = sorted.reduce((s,x) => s + x.amount, 0);
+  tbody.innerHTML = sorted.map(x => `
+    <tr>
+      <td>${fmtDate(x.date)}</td>
+      <td>${x.desc}</td>
+      <td class="amount-in">${fmt(x.amount)}</td>
+      <td><button class="btn-del" onclick="deleteIncome('${x.id}')">Delete</button></td>
+    </tr>`).join('');
+  document.getElementById('inc-total').textContent = 'Total: ' + fmt(total);
+  document.getElementById('badge-income').textContent = data.income.length;
+}
+
+// ===================== LOANS =====================
+function previewLoan() {
+  const capital = parseFloat(document.getElementById('loan-capital').value) || 0;
+  const rate = parseFloat(document.getElementById('loan-rate').value) || 0;
+  const months = parseInt(document.getElementById('loan-months').value) || 3;
+  if (!capital || !rate) { document.getElementById('loan-preview').style.display = 'none'; return; }
+  const interestPerMonth = capital * (rate / 100);
+  const totalInterest = interestPerMonth * months;
+  const totalRepay = capital + totalInterest;
+  const monthly = totalRepay / months;
+  let lines = `Capital: ${fmt(capital)} | Rate: ${rate}% flat | Over ${months} month(s)<br>`;
+  lines += `Interest per month: ${fmt(interestPerMonth)} | Total interest: ${fmt(totalInterest)}<br>`;
+  lines += `<strong>Total to repay: ${fmt(totalRepay)} → ${fmt(monthly)} / month</strong>`;
+  document.getElementById('loan-preview-text').innerHTML = lines;
+  document.getElementById('loan-preview').style.display = 'block';
+}
+
+function addLoan() {
+  const date = document.getElementById('loan-date').value || todayStr();
+  const desc = document.getElementById('loan-desc').value.trim();
+  const capital = parseFloat(document.getElementById('loan-capital').value);
+  const rate = parseFloat(document.getElementById('loan-rate').value);
+  const months = parseInt(document.getElementById('loan-months').value);
+  if (!desc || isNaN(capital) || capital <= 0 || isNaN(rate) || rate < 0) {
+    alert('Please fill in all loan fields correctly.'); return;
+  }
+  const data = getData(currentKey);
+  // Build repayment schedule
+  const interestPerMonth = capital * (rate / 100);
+  const totalPerMonth = (capital / months) + interestPerMonth;
+  const schedule = [];
+  const [y, m] = currentKey.replace('budget_','').split('_');
+  for (let i = 0; i < months; i++) {
+    let dm = new Date(parseInt(y), parseInt(m) - 1 + i, 1);
+    schedule.push({
+      monthKey: getMonthKey(dm.getFullYear(), dm.getMonth()+1),
+      label: MONTHS[dm.getMonth()] + ' ' + dm.getFullYear(),
+      capital: capital / months,
+      interest: interestPerMonth,
+      total: totalPerMonth,
+      paid: false
+    });
+  }
+  data.loans.push({ id: uid(), date, desc, capital, rate, months, schedule });
+  saveData(currentKey, data);
+  document.getElementById('loan-desc').value = '';
+  document.getElementById('loan-capital').value = '';
+  document.getElementById('loan-rate').value = '';
+  document.getElementById('loan-preview').style.display = 'none';
+  renderAll();
+}
+
+function deleteLoan(id) {
+  if (!confirm('Delete this loan and its entire repayment schedule?')) return;
+  const data = getData(currentKey);
+  data.loans = data.loans.filter(x => x.id !== id);
+  saveData(currentKey, data);
+  renderAll();
+}
+
+function togglePaid(loanId, monthIdx) {
+  const data = getData(currentKey);
+  const loan = data.loans.find(x => x.id === loanId);
+  if (loan) { loan.schedule[monthIdx].paid = !loan.schedule[monthIdx].paid; }
+  saveData(currentKey, data);
+  renderAll();
+}
+
+function renderLoans() {
+  const data = getData(currentKey);
+  const container = document.getElementById('loans-list');
+  document.getElementById('badge-loans').textContent = data.loans.length;
+
+  if (!data.loans.length) {
+    container.innerHTML = `<div class="card"><div class="card-body empty-state"><div class="icon">🦈</div>No loans recorded yet</div></div>`;
+    return;
+  }
+
+  container.innerHTML = data.loans.map(loan => {
+    const totalInterest = loan.capital * (loan.rate / 100) * loan.months;
+    const totalRepay = loan.capital + totalInterest;
+    const paidCount = loan.schedule.filter(s => s.paid).length;
+    const paidAmount = loan.schedule.filter(s => s.paid).reduce((a,s) => a + s.total, 0);
+    const schedHTML = loan.schedule.map((s, i) => `
+      <div class="sched-month ${s.paid ? 'paid' : ''}">
+        <div class="m-label">${s.label}</div>
+        <div class="m-capital">Capital: ${fmt(s.capital)}</div>
+        <div class="m-interest">Interest: ${fmt(s.interest)}</div>
+        <div class="m-total">${fmt(s.total)}</div>
+        <div class="m-paid">
+          <input type="checkbox" ${s.paid ? 'checked' : ''} onchange="togglePaid('${loan.id}',${i})">
+          <span>${s.paid ? '✅ Paid' : 'Mark paid'}</span>
+        </div>
+      </div>`).join('');
+    return `
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">🦈 ${loan.desc} — ${fmtDate(loan.date)}</div>
+          <button class="btn-del" onclick="deleteLoan('${loan.id}')">Delete Loan</button>
+        </div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:12px;font-size:0.87rem;">
+            <span>Capital: <strong>${fmt(loan.capital)}</strong></span>
+            <span>Rate: <strong>${loan.rate}%</strong> flat (on capital only)</span>
+            <span>Months: <strong>${loan.months}</strong></span>
+            <span>Total Interest: <strong class="amount-warn">${fmt(totalInterest)}</strong></span>
+            <span>Total Repay: <strong class="amount-out">${fmt(totalRepay)}</strong></span>
+            <span>Paid: <strong class="amount-in">${paidCount}/${loan.months} (${fmt(paidAmount)})</strong></span>
+          </div>
+          <div class="schedule-grid">${schedHTML}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ===================== OWNER'S PAY =====================
+function addOwner() {
+  const date = document.getElementById('own-date').value || todayStr();
+  const desc = document.getElementById('own-desc').value.trim();
+  const amount = parseFloat(document.getElementById('own-amount').value);
+  if (!desc || isNaN(amount) || amount <= 0) { alert('Please fill in all fields.'); return; }
+  const data = getData(currentKey);
+  data.owners.push({ id: uid(), date, desc, amount });
+  saveData(currentKey, data);
+  document.getElementById('own-desc').value = '';
+  document.getElementById('own-amount').value = '';
+  renderAll();
+}
+
+function deleteOwner(id) {
+  if (!confirm('Delete this entry?')) return;
+  const data = getData(currentKey);
+  data.owners = data.owners.filter(x => x.id !== id);
+  saveData(currentKey, data);
+  renderAll();
+}
+
+function renderOwners() {
+  const data = getData(currentKey);
+  const tbody = document.getElementById('own-tbody');
+  if (!data.owners.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div class="icon">👤</div>No owner\'s pay recorded yet</td></tr>';
+    document.getElementById('own-total').textContent = 'Total: R 0.00';
+    document.getElementById('badge-owners').textContent = 0;
+    return;
+  }
+  const sorted = [...data.owners].sort((a,b) => a.date.localeCompare(b.date));
+  const total = sorted.reduce((s,x) => s + x.amount, 0);
+  tbody.innerHTML = sorted.map(x => `
+    <tr>
+      <td>${fmtDate(x.date)}</td>
+      <td>${x.desc}</td>
+      <td class="amount-warn">${fmt(x.amount)}</td>
+      <td><button class="btn-del" onclick="deleteOwner('${x.id}')">Delete</button></td>
+    </tr>`).join('');
+  document.getElementById('own-total').textContent = 'Total: ' + fmt(total);
+  document.getElementById('badge-owners').textContent = data.owners.length;
+}
+
+// ===================== EXPENSES =====================
+function addExpense() {
+  const date = document.getElementById('exp-date').value || todayStr();
+  const cat = document.getElementById('exp-cat').value;
+  const desc = document.getElementById('exp-desc').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount.'); return; }
+  const data = getData(currentKey);
+  data.expenses.push({ id: uid(), date, cat, desc, amount });
+  saveData(currentKey, data);
+  document.getElementById('exp-desc').value = '';
+  document.getElementById('exp-amount').value = '';
+  renderAll();
+}
+
+function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  const data = getData(currentKey);
+  data.expenses = data.expenses.filter(x => x.id !== id);
+  saveData(currentKey, data);
+  renderAll();
+}
+
+function renderExpenses() {
+  const data = getData(currentKey);
+  const tbody = document.getElementById('exp-tbody');
+  if (!data.expenses.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><div class="icon">💸</div>No expenses recorded yet</td></tr>';
+    document.getElementById('exp-total').textContent = 'Total: R 0.00';
+    document.getElementById('badge-expenses').textContent = 0;
+    return;
+  }
+  const sorted = [...data.expenses].sort((a,b) => a.date.localeCompare(b.date));
+  const total = sorted.reduce((s,x) => s + x.amount, 0);
+  tbody.innerHTML = sorted.map(x => `
+    <tr>
+      <td>${fmtDate(x.date)}</td>
+      <td><span style="background:var(--off-white);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:0.78rem;font-weight:600">${x.cat}</span></td>
+      <td>${x.desc || '—'}</td>
+      <td class="amount-out">${fmt(x.amount)}</td>
+      <td><button class="btn-del" onclick="deleteExpense('${x.id}')">Delete</button></td>
+    </tr>`).join('');
+  document.getElementById('exp-total').textContent = 'Total: ' + fmt(total);
+  document.getElementById('badge-expenses').textContent = data.expenses.length;
+}
+
+// ===================== LEDGER =====================
+function renderLedger() {
+  const data = getData(currentKey);
+  const totalIncome = data.income.reduce((s,x) => s+x.amount, 0);
+  const totalOwners = data.owners.reduce((s,x) => s+x.amount, 0);
+  const totalExpenses = data.expenses.reduce((s,x) => s+x.amount, 0);
+
+  // Loan repayments due this month
+  const [ky, km] = currentKey.replace('budget_','').split('_');
+  let loanRepayThisMonth = 0;
+  // search all months' loans for schedules matching current month
+  const allKeys = Object.keys(localStorage).filter(k => k.startsWith('budget_'));
+  allKeys.forEach(k => {
+    const d = getData(k);
+    d.loans.forEach(loan => {
+      loan.schedule.forEach(s => {
+        if (s.monthKey === currentKey) loanRepayThisMonth += s.total;
+      });
+    });
+  });
+
+  const totalOut = totalOwners + totalExpenses + loanRepayThisMonth;
+  const balance = totalIncome - totalOut;
+
+  // Update banner
+  document.getElementById('bannerIncome').textContent = fmt(totalIncome);
+  document.getElementById('bannerExpenses').textContent = fmt(totalExpenses);
+  document.getElementById('bannerLoans').textContent = fmt(loanRepayThisMonth);
+  document.getElementById('bannerSavings').textContent = fmt(totalOwners);
+  const bEl = document.getElementById('bannerBalance');
+  bEl.textContent = fmt(balance);
+  bEl.className = 'bal-value ' + (balance >= 0 ? 'positive' : 'negative');
+
+  // Summary boxes
+  document.getElementById('ledger-summary').innerHTML = `
+    <div class="summary-box"><div class="s-label">Total Income</div><div class="s-val in">${fmt(totalIncome)}</div></div>
+    <div class="summary-box"><div class="s-label">Loan Repayments</div><div class="s-val out">${fmt(loanRepayThisMonth)}</div></div>
+    <div class="summary-box"><div class="s-label">Owner's Pay</div><div class="s-val gold">${fmt(totalOwners)}</div></div>
+    <div class="summary-box"><div class="s-label">Expenses</div><div class="s-val out">${fmt(totalExpenses)}</div></div>
+    <div class="summary-box"><div class="s-label">Running Balance</div><div class="s-val ${balance>=0?'in':'out'}">${fmt(balance)}</div></div>`;
+
+  // Build all transactions for this month
+  let txns = [];
+  data.income.forEach(x => txns.push({ date: x.date, type: '📥 Income', desc: x.desc, in: x.amount, out: 0 }));
+  data.owners.forEach(x => txns.push({ date: x.date, type: "👤 Owner's Pay", desc: x.desc, in: 0, out: x.amount }));
+  data.expenses.forEach(x => txns.push({ date: x.date, type: `💸 ${x.cat}`, desc: x.desc, in: 0, out: x.amount }));
+
+  // Loan repayments from any source
+  allKeys.forEach(k => {
+    const d = getData(k);
+    d.loans.forEach(loan => {
+      loan.schedule.forEach(s => {
+        if (s.monthKey === currentKey) {
+          txns.push({ date: s.monthKey.replace('budget_','').replace('_','-')+'-01', type: '🦈 Loan Repay', desc: loan.desc + (s.paid ? ' ✅' : ''), in: 0, out: s.total });
+        }
+      });
+    });
+  });
+
+  txns.sort((a,b) => a.date.localeCompare(b.date));
+
+  const tbody = document.getElementById('ledger-tbody');
+  if (!txns.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><div class="icon">📒</div>No entries this month</td></tr>';
+    return;
+  }
+
+  let running = 0;
+  tbody.innerHTML = txns.map(tx => {
+    running += tx.in - tx.out;
+    const cls = running >= 0 ? 'amount-in' : 'amount-out';
+    return `<tr>
+      <td>${fmtDate(tx.date)}</td>
+      <td>${tx.type}</td>
+      <td>${tx.desc || '—'}</td>
+      <td>${tx.in ? '<span class="amount-in">'+fmt(tx.in)+'</span>' : '—'}</td>
+      <td>${tx.out ? '<span class="amount-out">'+fmt(tx.out)+'</span>' : '—'}</td>
+      <td class="${cls}">${fmt(running)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ===================== RENDER ALL =====================
+function renderAll() {
+  renderIncome();
+  renderLoans();
+  renderOwners();
+  renderExpenses();
+  renderLedger();
+}
+
+// ===================== INIT =====================
+(function init() {
+  buildMonthSelector();
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  currentKey = getMonthKey(y, m);
+  document.getElementById('ledger-month-label').textContent = MONTHS[m-1] + ' ' + y;
+
+  // Set default dates
+  const today = todayStr();
+  ['inc-date','loan-date','own-date','exp-date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = today;
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
